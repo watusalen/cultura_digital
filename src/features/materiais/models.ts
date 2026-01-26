@@ -1,7 +1,9 @@
 export type PlanoDeAula = {
   id: string;
   unidadeId: string;
-  conteudo: string; // Markdown
+  conteudo: any; // JSON
+  downloadUrl?: string;
+  filename?: string;
   dataGeracao: string;
 };
 

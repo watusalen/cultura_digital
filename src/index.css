@@ -1,7 +1,12 @@
-@import "tailwindcss";
+/* Global styles - BeerCSS handles most of the reset and theming */
+:root {
+  --primary: #0066cc;
+  --on-primary: #ffffff;
+  --secondary: #5c5c5c;
+  --surface: #ffffff;
+  --background: #f5f5f5;
+}
 
-@theme {
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-secondary: #475569;
+body {
+  background-color: var(--background);
 }

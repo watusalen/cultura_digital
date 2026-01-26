@@ -1,8 +1,4 @@
 import { useState, type FormEvent } from "react";
-import { Page } from "../../shared/components/Page";
-import { Card } from "../../shared/components/Card";
-import { Button } from "../../shared/components/Button";
-import { FormField } from "../../shared/components/FormField";
 import { RAG_BASE_URL } from "../../core/config/api";
 import type { Disciplina } from "./models";
 import { listarDisciplinas, salvarDisciplina, removerDisciplina } from "./services";
@@ -13,6 +9,11 @@ import {
   gerarAtividadeRemota,
   type ActivityResponse,
 } from "../rag/services";
+import { PageHeader } from "../../shared/components/PageHeader";
+import { Card } from "../../shared/components/Card";
+import { Button } from "../../shared/components/Button";
+import { Dialog } from "../../shared/components/Dialog";
+import { Input, Select } from "../../shared/components/FormFields";
 
 type DisciplinasPageProps = {
   onSelecionarDisciplina?: (disciplina: Disciplina) => void;
@@ -42,37 +43,45 @@ export function DisciplinasPage({ onSelecionarDisciplina }: DisciplinasPageProps
   }
 
   return (
-    <Page title="Cultura Digital" subtitle="Suas disciplinas">
-      <Card title="Suas Disciplinas">
-        <div className="flex flex-col gap-6">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-slate-500">Gerencie suas turmas e conteúdos.</p>
-            <Button type="button" onClick={() => setCriando(true)}>
-              Criar disciplina
-            </Button>
-          </div>
-          
-          {criando ? (
-            <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-              <h4 className="font-medium text-slate-900 mb-4">Nova Disciplina</h4>
-              <DisciplinaForm onSubmit={handleCriarDisciplina} />
-              <div className="mt-2 flex justify-end">
-                <Button variant="ghost" onClick={() => setCriando(false)} className="text-sm">Cancelar</Button>
-              </div>
-            </div>
-          ) : null}
+    <div className="padding">
+      <PageHeader 
+        title="Cultura Digital" 
+        subtitle="Suas disciplinas" 
+      />
 
-          <DisciplinaList
-            disciplinas={disciplinas}
-            onSelectDisciplina={onSelecionarDisciplina}
-            onDeleteDisciplina={handleRemoverDisciplina}
+      <Card 
+        title="Suas Disciplinas" 
+        className="mb-4"
+        actions={
+          <Button onClick={() => setCriando(true)} icon="add">
+            Criar disciplina
+          </Button>
+        }
+      >
+        <p className="small mb-4">Gerencie suas turmas e conteúdos.</p>
+        
+        <Dialog
+          open={criando}
+          onClose={() => setCriando(false)}
+          title="Nova Disciplina"
+        >
+          <DisciplinaForm 
+            onSubmit={handleCriarDisciplina} 
+            onCancel={() => setCriando(false)}
           />
-        </div>
+        </Dialog>
+
+        <DisciplinaList
+          disciplinas={disciplinas}
+          onSelectDisciplina={onSelecionarDisciplina}
+          onDeleteDisciplina={handleRemoverDisciplina}
+        />
       </Card>
+
       <Card title="Gerar atividade avaliativa com IA">
         <ActivityGeneratorCard />
       </Card>
-    </Page>
+    </div>
   );
 }
 
@@ -126,53 +135,53 @@ function ActivityGeneratorCard() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-xl">
-      <FormField label="Disciplina">
-        <input
-          value={values.disciplina}
-          onChange={(event) => handleChange("disciplina", event.target.value)}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-        />
-      </FormField>
-      <FormField label="Tema / Assunto da aula">
-        <input
-          value={values.assunto}
-          onChange={(event) => handleChange("assunto", event.target.value)}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-        />
-      </FormField>
-      <FormField label="Nível / Série">
-        <select
-          value={values.nivel}
-          onChange={(event) => handleChange("nivel", event.target.value)}
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white"
-        >
-          <option value="">Selecione uma série</option>
-          {OPCOES_SERIES.map((grupo) => (
-            <optgroup key={grupo.label} label={grupo.label}>
-              {grupo.options.map((opcao) => (
-                <option key={opcao.value} value={opcao.value}>
-                  {opcao.label}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-      </FormField>
-      <div className="flex items-center gap-3 justify-end">
-        {error ? <span className="text-sm text-red-600">{error}</span> : null}
-        <Button type="submit" disabled={loading}>
-          {loading ? "Gerando atividade..." : "Gerar atividade"}
+    <form onSubmit={handleSubmit}>
+      <Input
+        label="Disciplina"
+        value={values.disciplina}
+        onChange={(event) => handleChange("disciplina", event.target.value)}
+        placeholder=" "
+      />
+
+      <Input
+        label="Tema / Assunto da aula"
+        value={values.assunto}
+        onChange={(event) => handleChange("assunto", event.target.value)}
+        placeholder=" "
+      />
+
+      <Select
+        label="Nível / Série"
+        value={values.nivel}
+        onChange={(event) => handleChange("nivel", event.target.value)}
+      >
+        <option value="">Selecione uma série</option>
+        {OPCOES_SERIES.map((grupo) => (
+          <optgroup key={grupo.label} label={grupo.label}>
+            {grupo.options.map((opcao) => (
+              <option key={opcao.value} value={opcao.value}>
+                {opcao.label}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </Select>
+
+      <div className="row align-center justify-end mt-4">
+        {error ? <span className="error-text small margin-right">{error}</span> : null}
+        <Button type="submit" loading={loading} disabled={loading}>
+          Gerar atividade
         </Button>
       </div>
+      
       {resultado ? (
-        <div className="mt-2 text-sm text-gray-800">
-          <span className="block mb-1">Atividade gerada com sucesso.</span>
+        <div className="margin-top primary-text">
+          <span className="block margin-bottom">Atividade gerada com sucesso.</span>
           <a
             href={`${RAG_BASE_URL}${resultado.download_url}`}
             target="_blank"
             rel="noreferrer"
-            className="text-blue-600 underline"
+            className="link"
           >
             Baixar atividade ({resultado.filename})
           </a>

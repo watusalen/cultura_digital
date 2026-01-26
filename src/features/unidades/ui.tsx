@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Page } from "../../shared/components/Page";
-import { Card } from "../../shared/components/Card";
-import { Button } from "../../shared/components/Button";
-import { FormField } from "../../shared/components/FormField";
 import { listarUnidadesDaDisciplina, salvarUnidade, removerUnidade, gerarSugestaoUnidades } from "./services";
 import type { Unidade } from "./models";
+import { PageHeader } from "../../shared/components/PageHeader";
+import { Card } from "../../shared/components/Card";
+import { Button } from "../../shared/components/Button";
+import { Dialog } from "../../shared/components/Dialog";
+import { Input, Textarea } from "../../shared/components/FormFields";
+import { EmptyState } from "../../shared/components/EmptyState";
+import { UnidadeCard } from "./components/UnidadeCard";
 
 type UnidadesPageProps = {
   disciplina: { id: string; nome: string; serieAno: string };
@@ -75,88 +78,84 @@ export default function UnidadesPage({ disciplina, onVoltar, onSelecionarUnidade
   }
 
   return (
-    <Page
-      title={`Unidades - ${disciplina.nome}`}
-      subtitle={`${disciplina.serieAno}`}
-      actions={
-        <Button variant="outline" onClick={onVoltar}>
-          Voltar para Disciplinas
-        </Button>
-      }
-    >
-      <Card title="Unidades de Ensino">
-        <div className="flex flex-col gap-4">
-          {unidades.length === 0 ? (
-            <p className="text-sm text-gray-500">Nenhuma unidade cadastrada nesta disciplina.</p>
-          ) : (
-            <div className="grid grid-cols-1 gap-3">
-              {unidades.map((unidade) => (
-                <div
-                  key={unidade.id}
-                  className="p-4 border border-gray-200 rounded-lg flex justify-between items-center"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-semibold text-gray-900">{unidade.nome}</h4>
-                      {unidade.origem === "ia" && (
-                        <span className="px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
-                          IA
-                        </span>
-                      )}
-                    </div>
-                    {unidade.descricao && <p className="text-sm text-gray-600">{unidade.descricao}</p>}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => onSelecionarUnidade(unidade)}>
-                      Materiais
-                    </Button>
-                    <Button variant="ghost" onClick={() => handleRemover(unidade.id)} className="text-red-600">
-                      Remover
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+    <main className="responsive">
+      <PageHeader
+        title={`Unidades - ${disciplina.nome}`}
+        subtitle={disciplina.serieAno}
+        onBack={onVoltar}
+        backLabel="Voltar para Disciplinas"
+      />
 
-          {!criando && (
-            <div className="flex justify-end gap-2">
-              <Button variant="secondary" onClick={handleGerarSugestoes} disabled={gerando}>
-                {gerando ? "Gerando..." : "Gerar Sugestões com IA"}
+      <Card
+        title="Unidades de Ensino"
+        icon="view_list"
+        actions={
+          !criando && (
+            <>
+              <Button 
+                variant="border" 
+                onClick={handleGerarSugestoes} 
+                disabled={gerando} 
+                loading={gerando}
+                icon="auto_awesome"
+                className="mr-2"
+              >
+                {gerando ? "Gerando..." : "Gerar com IA"}
               </Button>
-              <Button onClick={() => setCriando(true)}>Nova Unidade</Button>
-            </div>
-          )}
-
-          {criando && (
-            <div className="mt-4 border-t border-gray-100 pt-4 flex flex-col gap-4">
-              <h4 className="font-medium text-gray-900">Nova Unidade</h4>
-              <FormField label="Nome da Unidade">
-                <input
-                  value={nome}
-                  onChange={(e) => setNome(e.target.value)}
-                  className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                  placeholder="Ex: Unidade 1 - Introdução"
+              <Button onClick={() => setCriando(true)} icon="add">
+                Nova Unidade
+              </Button>
+            </>
+          )
+        }
+      >
+        {unidades.length === 0 ? (
+          <EmptyState
+            title="Nenhuma unidade cadastrada"
+            description="Cadastre uma unidade manualmente ou gere com IA."
+          />
+        ) : (
+          <div className="grid">
+            {unidades.map((unidade) => (
+              <div key={unidade.id} className="s12">
+                <UnidadeCard 
+                  unidade={unidade}
+                  onSelect={onSelecionarUnidade}
+                  onDelete={handleRemover}
                 />
-              </FormField>
-              <FormField label="Descrição (opcional)">
-                <textarea
-                  value={descricao}
-                  onChange={(e) => setDescricao(e.target.value)}
-                  className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-                  rows={2}
-                />
-              </FormField>
-              <div className="flex justify-end gap-2">
-                <Button variant="ghost" onClick={() => setCriando(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleSalvar}>Salvar Unidade</Button>
               </div>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        )}
+
+        <Dialog
+          open={criando}
+          onClose={() => setCriando(false)}
+          title="Nova Unidade"
+          actions={
+            <>
+              <Button variant="transparent" onClick={() => setCriando(false)} className="mr-2">
+                Cancelar
+              </Button>
+              <Button onClick={handleSalvar} icon="check">
+                Salvar Unidade
+              </Button>
+            </>
+          }
+        >
+          <Input
+            label="Nome da Unidade"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+          />
+          <Textarea
+            label="Descrição (opcional)"
+            value={descricao}
+            onChange={(e) => setDescricao(e.target.value)}
+            rows={2}
+          />
+        </Dialog>
       </Card>
-    </Page>
+    </main>
   );
 }

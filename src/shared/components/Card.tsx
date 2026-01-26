@@ -1,23 +1,29 @@
-import type { ReactNode } from "react";
+import type { ReactNode, HTMLAttributes } from "react";
 
-type CardProps = {
+type CardProps = HTMLAttributes<HTMLElement> & {
   title?: string;
+  icon?: string;
   children: ReactNode;
-  className?: string;
+  actions?: ReactNode;
 };
 
-export function Card({ title, children, className = "" }: CardProps) {
+export function Card({ title, icon, children, actions, className = "", ...props }: CardProps) {
   return (
-    <div className={`bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden ${className}`}>
-      {title ? (
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-          <h3 className="font-semibold text-slate-800 text-lg">{title}</h3>
+    <article className={className} {...props}>
+      {(title || icon) && (
+        <div className="row align-center">
+          {icon && <i className="large">{icon}</i>}
+          {title && <h5 className="max">{title}</h5>}
         </div>
-      ) : null}
-      <div className="p-6">
+      )}
+      <div className="padding">
         {children}
+        {actions && (
+          <nav className="right-align mt-4">
+            {actions}
+          </nav>
+        )}
       </div>
-    </div>
+    </article>
   );
 }
-

@@ -65,15 +65,13 @@ export function removerSlides(id: string): void {
 export async function gerarPlanoDeAula(
   request: LessonPlanRequest,
   unidadeId: string
-): Promise<PlanoDeAula> {
+): Promise<LessonPlanResponse> {
   const response = await postRag<LessonPlanResponse>("/api/units/lesson-plan", request);
-  
-  return {
-    id: crypto.randomUUID(),
-    unidadeId,
-    conteudo: response.conteudo,
-    dataGeracao: new Date().toISOString(),
-  };
+  return response;
+}
+
+export async function regenerarPdfPlano(data: any): Promise<{ filename: string; download_url: string }> {
+  return await postRag<{ filename: string; download_url: string }>("/api/units/lesson-plan/pdf", { data });
 }
 
 export function buscarPlanoDaUnidade(unidadeId: string): PlanoDeAula | null {
